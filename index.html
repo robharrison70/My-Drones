@@ -2,71 +2,90 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
             --fpv-orange: #ff6600;
             --ha-blue: #03a9f4;
-            --bg-dark: #0f0f0f;
-            --card-bg: #1a1a1a;
-            --accent-green: #00e676;
+            --bg-dark: #0a0a0a;
+            --card-bg: #161616;
+            --border-color: #2a2a2a;
+            --text-main: #e0e0e0;
+            --text-dim: #777;
         }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg-dark); color: #e0e0e0; margin: 0; padding-bottom: 50px; }
-        header { background: linear-gradient(180deg, #000 0%, #1a1a1a 100%); padding: 3rem 1rem; text-align: center; border-bottom: 2px solid #333; }
-        .container { max-width: 1100px; margin: auto; padding: 20px; }
+        body { font-family: 'Consolas', 'Monaco', monospace; background: var(--bg-dark); color: var(--text-main); margin: 0; padding-bottom: 80px; }
+        header { background: #000; padding: 2rem; text-align: center; border-bottom: 2px solid var(--fpv-orange); }
+        .container { max-width: 1000px; margin: auto; padding: 20px; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
-        .section-card { background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid #333; }
-        
-        h2 { font-size: 1.1rem; color: #888; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+        /* Section Headers */
+        .master-label { color: var(--text-dim); font-size: 0.7rem; letter-spacing: 5px; text-transform: uppercase; margin-top: 50px; display: block; text-align: center; }
 
-        /* Checklist Styling */
-        .checklist { list-style: none; padding: 0; }
-        .checklist li { padding: 10px 0; border-bottom: 1px solid #252525; display: flex; align-items: center; }
-        .checklist input[type="checkbox"] { 
-            appearance: none; width: 18px; height: 18px; border: 2px solid var(--fpv-orange); 
-            border-radius: 4px; margin-right: 12px; cursor: pointer; position: relative; 
-        }
-        .checklist input[type="checkbox"]:checked { background: var(--fpv-orange); }
-        .checklist input[type="checkbox"]:checked::after { content: '✓'; color: white; position: absolute; left: 3px; top: -2px; font-weight: bold; }
+        /* Inventory Table Styling */
+        .inventory-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: var(--card-bg); border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
+        .inventory-table th { background: #1a1a1a; text-align: left; padding: 12px 15px; color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
+        .inventory-table td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); font-size: 0.9rem; }
+        .inventory-table tr:last-child td { border-bottom: none; }
         
-        /* Interactive HA Button */
-        .ha-btn { 
-            display: inline-block; background: var(--ha-blue); color: black; padding: 10px 20px; 
-            border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 15px; transition: 0.3s;
-        }
-        .ha-btn:hover { opacity: 0.8; transform: translateY(-2px); }
+        .category-header { background: #1a1a1a; color: #fff; font-weight: bold; padding: 10px 15px; border-left: 4px solid var(--fpv-orange); display: flex; justify-content: space-between; margin-top: 20px; }
+        .ha-header { border-left-color: var(--ha-blue); }
+
+        .tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+        .online { color: #4caf50; background: rgba(76, 175, 80, 0.1); }
+        .offline { color: #f44336; background: rgba(244, 67, 54, 0.1); }
+        .static-ip { color: var(--ha-blue); font-family: monospace; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1 style="margin:0; letter-spacing: 5px;">HUB-01</h1>
-    <p style="color: var(--fpv-orange); font-weight: bold;">PILOT & SYSTEM ADMIN</p>
+    <h1>SYSTEMS INVENTORY v1.2</h1>
+    <p style="color: var(--text-dim); font-size: 0.8rem;">DRONE HANGAR // HOME ASSISTANT NODES</p>
 </header>
 
 <div class="container">
-    <div class="grid">
-        
-        <div class="section-card">
-            <h2>🛠️ Pre-Flight / Maintenance</h2>
-            <ul class="checklist">
-                <li><input type="checkbox"> Check prop nuts & motor screws</li>
-                <li><input type="checkbox"> Inspect LiPo for puffing/damage</li>
-                <li><input type="checkbox"> Update Home Assistant Core</li>
-                <li><input type="checkbox"> Backup YAML configurations</li>
-                <li><input type="checkbox"> Check Zigbee Mesh signal strength</li>
-            </ul>
-        </div>
 
-        <div class="section-card">
-            <h2>📡 Network & HA Status</h2>
-            <p><strong>Primary Controller:</strong> Raspberry Pi 4</p>
-            <p><strong>Storage:</strong> 128GB SSD</p>
-            <p><strong>Integration Count:</strong> 24 Active</p>
-            <a href="#" class="ha-btn">OPEN HOME ASSISTANT</a>
-        </div>
+    <span class="master-label">Section 01: FPV Components</span>
 
-    </div>
+    <div class="category-header"><span>Flight Controllers</span></div>
+    <table class="inventory-table">
+        <thead><tr><th>Model</th><th>Assignment</th><th>Status</th></tr></thead>
+        <tbody>
+            <tr><td>SpeedyBee F405 V3</td><td>5" Freestyle</td><td><span class="tag online">Active</span></td></tr>
+            <tr><td>HappyModel AIO</td><td>75mm Whoop</td><td><span class="tag online">Active</span></td></tr>
+        </tbody>
+    </table>
+
+    <div class="category-header"><span>Motors & Power</span></div>
+    <table class="inventory-table">
+        <thead><tr><th>Part</th><th>Specs</th><th>Qty</th></tr></thead>
+        <tbody>
+            <tr><td>Emax ECO II</td><td>2207 / 1700KV</td><td>4</td></tr>
+            <tr><td>BetaFPV 1102</td><td>22000KV</td><td>2 Spares</td></tr>
+        </tbody>
+    </table>
+
+    <span class="master-label">Section 02: Smart Home Infrastructure</span>
+
+    <div class="category-header ha-header"><span>Network Nodes & Hubs</span></div>
+    <table class="inventory-table">
+        <thead><tr><th>Node Name</th><th>Address / ID</th><th>Protocol</th></tr></thead>
+        <tbody>
+            <tr><td><strong>HA Main Server</strong></td><td><span class="static-ip">192.168.1.100</span></td><td>Ethernet</td></tr>
+            <tr><td>SkyConnect Dongle</td><td>USB Path: /dev/ttyUSB0</td><td>Zigbee/Thread</td></tr>
+            <tr><td>Living Room ESP32</td><td><span class="static-ip">192.168.1.105</span></td><td>ESPHome (WiFi)</td></tr>
+        </tbody>
+    </table>
+
+    <div class="category-header ha-header"><span>End Devices</span></div>
+    <table class="inventory-table">
+        <thead><tr><th>Device</th><th>Area</th><th>Battery / State</th></tr></thead>
+        <tbody>
+            <tr><td>Temp/Humidity Sensor</td><td>Server Room</td><td>92%</td></tr>
+            <tr><td>Smart Plug (3D Printer)</td><td>Garage</td><td><span class="tag online">Connected</span></td></tr>
+            <tr><td>Motion Sensor</td><td>Front Hall</td><td><span class="tag offline">Low Battery</span></td></tr>
+        </tbody>
+    </table>
+
 </div>
 
 </body>
