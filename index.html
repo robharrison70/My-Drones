@@ -41,7 +41,61 @@
     <h1>SYSTEMS INVENTORY v1.2</h1>
     <p style="color: var(--text-dim); font-size: 0.8rem;">DRONE HANGAR // HOME ASSISTANT NODES</p>
 </header>
+<div class="container">
+    <div class="progress-section">
+        <div class="progress-item">
+            <div class="progress-label">
+                <span>FLIGHT READY FLEET</span>
+                <span>75%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-fill orange" style="width: 75%;"></div>
+            </div>
+        </div>
 
+        <div class="progress-item">
+            <div class="progress-label">
+                <span>HOME AUTOMATION DEPLOYMENT</span>
+                <span>40%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-fill blue" style="width: 40%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .progress-section { 
+        background: #111; 
+        padding: 20px; 
+        border-radius: 8px; 
+        border: 1px dashed #333;
+        margin-bottom: 30px;
+    }
+    .progress-item { margin-bottom: 15px; }
+    .progress-item:last-child { margin-bottom: 0; }
+    
+    .progress-label { 
+        display: flex; 
+        justify-content: space-between; 
+        font-size: 0.7rem; 
+        font-weight: bold; 
+        margin-bottom: 8px; 
+        letter-spacing: 1px;
+    }
+
+    .progress-bar-bg { 
+        background: #222; 
+        height: 10px; 
+        border-radius: 5px; 
+        overflow: hidden; 
+    }
+    
+    .progress-fill { height: 100%; border-radius: 5px; transition: width 1s ease-in-out; }
+    .orange { background: var(--fpv-orange); box-shadow: 0 0 10px rgba(255, 102, 0, 0.4); }
+    .blue { background: var(--ha-blue); box-shadow: 0 0 10px rgba(3, 169, 244, 0.4); }
+</style>
 <div class="container">
 
     <span class="master-label">Section 01: FPV Components</span>
