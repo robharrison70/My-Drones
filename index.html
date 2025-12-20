@@ -5,93 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Systems Inventory Dashboard</title>
     <style>
-        /* COLOR THEME & FONT */
-        :root { 
-            --fpv: #ff6600; 
-            --ha: #03a9f4; 
-            --bg: #0a0a0a; 
-            --card: #161616; 
-            --text: #e0e0e0; 
-        }
-
-        body { 
-            font-family: 'Consolas', 'Courier New', monospace; 
-            background: var(--bg); 
-            color: var(--text); 
-            margin: 0; 
-            padding: 0; 
-        }
+        :root { --fpv: #ff6600; --ha: #03a9f4; --bg: #0a0a0a; --card: #161616; --text: #e0e0e0; }
+        body { font-family: 'Consolas', monospace; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
         
-        /* NAVIGATION BAR */
-        .nav-bar { 
-            display: flex; 
-            background: #000; 
-            border-bottom: 2px solid #333; 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-        }
-        .nav-btn { 
-            flex: 1; 
-            padding: 20px; 
-            text-align: center; 
-            cursor: pointer; 
-            font-weight: bold; 
-            border: none; 
-            background: none; 
-            color: #555; 
-            transition: 0.3s; 
-            font-size: 0.9rem; 
-            letter-spacing: 2px;
-        }
+        .nav-bar { display: flex; background: #000; border-bottom: 2px solid #333; position: sticky; top: 0; z-index: 100; }
+        .nav-btn { flex: 1; padding: 20px; text-align: center; cursor: pointer; font-weight: bold; border: none; background: none; color: #555; transition: 0.3s; font-size: 0.9rem; }
         .nav-btn.active.fpv-btn { color: var(--fpv); border-bottom: 3px solid var(--fpv); }
         .nav-btn.active.ha-btn { color: var(--ha); border-bottom: 3px solid var(--ha); }
 
-        /* MAIN CONTAINER */
         .container { max-width: 900px; margin: auto; padding: 20px; }
-
-        /* DATA TABLE */
-        .inventory-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            background: var(--card); 
-            border-radius: 8px; 
-            overflow: hidden; 
-            margin-top: 20px; 
-            border: 1px solid #2a2a2a; 
-        }
-        .inventory-table th { 
-            background: #1a1a1a; 
-            padding: 15px; 
-            text-align: left; 
-            color: #888; 
-            font-size: 0.7rem; 
-            text-transform: uppercase; 
-        }
-        .inventory-table td { 
-            padding: 15px; 
-            border-bottom: 1px solid #222; 
-            text-align: left; 
-            font-size: 0.9rem; 
-        }
+        .inventory-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; overflow: hidden; margin-top: 20px; border: 1px solid #2a2a2a; }
+        .inventory-table th { background: #1a1a1a; padding: 15px; text-align: left; color: #888; font-size: 0.7rem; text-transform: uppercase; }
+        .inventory-table td { padding: 15px; border-bottom: 1px solid #222; text-align: left; font-size: 0.9rem; }
         
-        /* PRO STATUS TAGS */
-        .status-tag { 
-            padding: 4px 10px; 
-            border-radius: 4px; 
-            font-size: 0.75rem; 
-            font-weight: bold;
-            text-transform: uppercase;
-            border: 1px solid #444;
-        }
+        /* Status Colors */
+        .status-tag { padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; border: 1px solid #444; }
         .status-ready { background: #064e3b; color: #10b981; border-color: #059669; box-shadow: 0 0 8px rgba(16, 185, 129, 0.2); }
         .status-repair { background: #450a0a; color: #ef4444; border-color: #dc2626; box-shadow: 0 0 8px rgba(239, 68, 68, 0.2); }
         .status-warning { background: #422006; color: #f59e0b; border-color: #d97706; }
         .status-neutral { background: #1f2937; color: #9ca3af; }
 
-        /* LOADING & FOOTER */
-        .loading-msg { text-align: center; margin-top: 50px; color: var(--fpv); font-style: italic; letter-spacing: 2px; }
-        .footer-info { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid #222; color: #555; font-size: 0.7rem; letter-spacing: 1px; }
+        .footer-info { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid #222; color: #555; font-size: 0.7rem; }
         #last-sync { color: var(--ha); }
     </style>
 </head>
@@ -104,59 +38,59 @@
 
     <div class="container">
         <div id="content">
-            <div class="loading-msg">INITIALIZING SYSTEM DATA...</div>
+            <div style="text-align:center; padding:50px; color:var(--fpv);">RE-INITIALIZING SYSTEMS...</div>
         </div>
-        
-        <div class="footer-info">
-            SYSTEM STATUS: ONLINE | LAST DATA SYNC: <span id="last-sync">NEVER</span>
-        </div>
+        <div class="footer-info">SYSTEM STATUS: ONLINE | LAST DATA SYNC: <span id="last-sync">NEVER</span></div>
     </div>
 
     <script>
-        // YOUR PUBLISHED CSV LINK
         const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLPLCFFC8Hi3lfSSHxo-1KRi9BYhboLM7s2zCZXSmCQbXtjIC9mdbzgi-J_kgdGO4XiEWzGQXZRoMV/pub?gid=0&single=true&output=csv";
-        
         let masterData = [];
-
-        async function init() {
-            try {
-                const response = await fetch(sheetUrl);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const text = await response.text();
-                
-                // Parse CSV rows and clean whitespace
-                const rows = text.split('\n');
-                masterData = rows.map(row => {
-                    return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, '').trim());
-                });
-
-                // Update Sync Timestamp
-                const now = new Date();
-                document.getElementById('last-sync').innerText = now.toLocaleTimeString();
-
-                showCategory('Drone'); // Default view
-            } catch (error) {
-                console.error("Fetch error:", error);
-                document.getElementById('content').innerHTML = `<div style="color:red; text-align:center; padding:20px;">⚠️ ERROR: Could not connect to Google Sheets.</div>`;
-            }
-        }
 
         function getStatusClass(status) {
             if (!status) return 'status-neutral';
             const s = status.toLowerCase();
-            if (s.includes('ready') || s.includes('online') || s.includes('active') || s.includes('fly')) return 'status-ready';
-            if (s.includes('repair') || s.includes('grounded') || s.includes('broken') || s.includes('offline')) return 'status-repair';
+            if (s.includes('ready') || s.includes('online') || s.includes('active')) return 'status-ready';
+            if (s.includes('repair') || s.includes('grounded') || s.includes('offline')) return 'status-repair';
             if (s.includes('progress') || s.includes('pending') || s.includes('build')) return 'status-warning';
             return 'status-neutral';
         }
 
+        async function init() {
+            try {
+                const response = await fetch(sheetUrl);
+                const text = await response.text();
+                const rows = text.split('\n');
+                masterData = rows.map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, '').trim()));
+                
+                document.getElementById('last-sync').innerText = new Date().toLocaleTimeString();
+                showCategory('Drone');
+            } catch (e) {
+                document.getElementById('content').innerHTML = "⚠️ SCRIPT ERROR: CHECK GOOGLE SHEET LINK";
+            }
+        }
+
         function showCategory(cat) {
-            // Update Navigation UI
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             if(cat === 'Drone') document.getElementById('btn-drone').classList.add('active');
             if(cat === 'Home') document.getElementById('btn-home').classList.add('active');
 
-            // Build Table
-            let html = `<table class="inventory-table">
-                <thead><tr><th>Model</th><th>Specs</th><th>Status</th></tr></thead>
-                <tbody>`;
+            let html = '<table class="inventory-table"><thead><tr><th>Model</th><th>Specs</th><th>Status</th></tr></thead><tbody>';
+            let found = 0;
+
+            masterData.forEach((cols, i) => {
+                if (i > 0 && cols[0] === cat) {
+                    found++;
+                    html += `<tr><td><strong>${cols[1]}</strong></td><td>${cols[2]}</td><td><span class="status-tag ${getStatusClass(cols[3])}">${cols[3]}</span></td></tr>`;
+                }
+            });
+
+            if(found === 0) html += `<tr><td colspan="3" style="text-align:center; padding:30px;">No data found for ${cat}</td></tr>`;
+            html += '</tbody></table>';
+            document.getElementById('content').innerHTML = html;
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
