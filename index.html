@@ -56,38 +56,40 @@
             if (s.includes('update') || s.includes('pending')) return 'status-update';
             return 'status-neutral';
         }
-
-        async function init() {
+async function init() {
             try {
                 const response = await fetch(sheetUrl);
                 const text = await response.text();
                 const rows = text.split('\n');
-                const data = rows.map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, '').trim()));
+                
+                // This version trims every cell automatically
+                const data = rows.map(row => 
+                    row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+                       .map(cell => cell.replace(/"/g, '').trim())
+                );
                 
                 document.getElementById('last-sync').innerText = new Date().toLocaleTimeString();
                 
-                // Build the Home-only table
                 let html = '<table class="inventory-table"><thead><tr><th>Device</th><th>Specs/Loc</th><th>Status</th></tr></thead><tbody>';
                 let found = 0;
 
                 data.forEach((cols, i) => {
-                    // Filter specifically for "Home" in Column A
-                    if (i > 0 && cols[0] === 'Home') {
+                    // This line now accepts "home", "Home", or "HOME" and ignores spaces
+                    if (i > 0 && cols[0] && cols[0].toLowerCase() === 'home') {
                         found++;
-                        html += `<tr><td><strong>${cols[1]}</strong></td><td>${cols[2]}</td><td><span class="status-tag ${getStatusClass(cols[3])}">${cols[3]}</span></td></tr>`;
+                        html += `<tr><td><strong>${cols[1] || '---'}</strong></td><td>${cols[2] || '---'}</td><td><span class="status-tag ${getStatusClass(cols[3])}">${cols[3] || '---'}</span></td></tr>`;
                     }
                 });
 
-                if(found === 0) html += `<tr><td colspan="3" style="text-align:center; padding:30px;">No Home devices found. Check Column A for "Home".</td></tr>`;
+                if(found === 0) {
+                    // If it fails, it will show you exactly what it found in Row 2, Column A to help you debug
+                    const firstVal = data[1] ? data[1][0] : "Empty Sheet";
+                    html += `<tr><td colspan="3" style="text-align:center; padding:30px;">No 'Home' entries found.<br><small>(First Category found: "${firstVal}")</small></td></tr>`;
+                }
+                
                 html += '</tbody></table>';
                 document.getElementById('content').innerHTML = html;
             } catch (e) {
                 document.getElementById('content').innerHTML = "⚠️ DATA LINK ERROR";
             }
         }
-
-        window.onload = init;
-    </script>
-</body>
-
-
