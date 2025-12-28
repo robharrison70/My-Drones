@@ -56,27 +56,34 @@
             return 'status-neutral';
         }
 
-        async function init() {
+     async function init() {
             try {
                 const response = await fetch(sheetUrl);
                 const text = await response.text();
                 const rows = text.split('\n');
-                const data = rows.map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, '').trim()));
+                
+                // Parse CSV and trim spaces
+                const data = rows.map(row => 
+                    row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, '').trim())
+                );
 
                 document.getElementById('last-sync').innerText = new Date().toLocaleTimeString();
                 
                 let html = '<table class="inventory-table"><thead><tr><th>Device</th><th>Details</th><th>Status</th></tr></thead><tbody>';
+                let found = 0;
 
                 data.forEach((cols, i) => {
-                    // Skip the header row (index 0)
-                    if (i > 0 && cols[0]) { 
+                    // Skip the header (Row 1) and make sure the row isn't empty
+                    if (i > 0 && cols[0] !== "" && cols.length >= 2) { 
+                        found++;
                         html += `<tr>
-                            <td><strong>${cols[0]}</strong></td>
-                            <td>${cols[1] || '---'}</td>
-                            <td><span class="status-tag ${getStatusClass(cols[2])}">${cols[2] || '---'}</span></td>
-                        </tr>`;
+                            <td><strong>${cols[0]}</strong></td> <td>${cols[1] || '---'}</td>    <td><span class="status-tag ${getStatusClass(cols[2])}">${cols[2] || '---'}</span></td> </tr>`;
                     }
                 });
+
+                if (found === 0) {
+                    html += `<tr><td colspan="3" style="text-align:center; padding:40px; color:#777;">No data found. Check that your Google Sheet has data in Columns A, B, and C.</td></tr>`;
+                }
 
                 html += '</tbody></table>';
                 document.getElementById('content').innerHTML = html;
@@ -91,4 +98,5 @@
     </script>
 </body>
 </html>
+
 
