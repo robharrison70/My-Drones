@@ -31,14 +31,13 @@
     </div>
 
     <script>
-        // Make sure this URL is your actual Published CSV link
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLPLCFFC8Hi3lfSSHxo-1KRi9BYhboLM7s2zCZXSmCQbXtjIC9mdbzgi-J_kgdGO4XiEWzGQXZRoMV/pub?gid=2796792&single=true&output=csv";
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLPLCFFC8Hi3lfSSHxo-1KRi9BYhboLM7s2zCZXSmCQbXtjIC9mdbzgi-J_kgdGO4XiEWzGQXZRoMV/pub?gid=0&single=true&output=csv";
 
         function getStatusClass(status) {
             if (!status) return 'status-neutral';
             const s = status.toLowerCase();
-            if (s.includes('online') || s.includes('active') || s.includes('on')) return 'status-online';
-            if (s.includes('offline') || s.includes('down') || s.includes('off')) return 'status-offline';
+            if (s.includes('online') || s.includes('active') || s.includes('on') || s.includes('ready')) return 'status-online';
+            if (s.includes('offline') || s.includes('down') || s.includes('off') || s.includes('repair')) return 'status-offline';
             return 'status-neutral';
         }
 
@@ -72,21 +71,19 @@
                 }
 
                 if (found === 0) {
-                    html += `<tr><td colspan="3" style="text-align:center; padding:40px; color:#777;">No data found in rows. Check Sheet.</td></tr>`;
+                    html += `<tr><td colspan="3" style="text-align:center; padding:40px; color:#777;">No data found. Check your spreadsheet.</td></tr>`;
                 }
 
                 html += '</tbody></table>';
                 document.getElementById('content').innerHTML = html;
 
             } catch (error) {
-                console.error("Error fetching data:", error);
-                document.getElementById('content').innerHTML = "<div style='text-align:center; color:red; padding:20px;'>⚠️ CONNECTION FAILED<br><small>Is the Sheet Published to Web as CSV?</small></div>";
+                document.getElementById('content').innerHTML = "<div style='text-align:center; color:red; padding:20px;'>⚠️ CONNECTION FAILED</div>";
             }
         }
 
         window.onload = init;
-        setInterval(init, 300000);
+        setInterval(init, 300000); // 5-minute auto-refresh
     </script>
 </body>
 </html>
-
