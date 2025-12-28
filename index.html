@@ -3,57 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Systems Inventory Dashboard</title>
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/6833/6833591.png" type="image/png">
+    <title>Home Assistant Systems</title>
     <style>
-        :root { --fpv: #ff6600; --ha: #03a9f4; --bg: #0a0a0a; --card: #161616; --text: #e0e0e0; }
+        :root { --ha-blue: #03a9f4; --bg: #0a0a0a; --card: #161616; --text: #e0e0e0; }
         body { font-family: 'Consolas', monospace; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
         
-        .nav-bar { display: flex; background: #000; border-bottom: 2px solid #333; position: sticky; top: 0; z-index: 100; }
-        .nav-btn { flex: 1; padding: 20px; text-align: center; cursor: pointer; font-weight: bold; border: none; background: none; color: #555; transition: 0.3s; font-size: 0.9rem; }
-        .nav-btn.active.fpv-btn { color: var(--fpv); border-bottom: 3px solid var(--fpv); }
-        .nav-btn.active.ha-btn { color: var(--ha); border-bottom: 3px solid var(--ha); }
+        /* Header Style */
+        .header { 
+            background: #000; 
+            padding: 25px; 
+            text-align: center; 
+            border-bottom: 2px solid var(--ha-blue);
+            letter-spacing: 3px;
+            font-weight: bold;
+            color: var(--ha-blue);
+        }
 
         .container { max-width: 900px; margin: auto; padding: 20px; }
-        .inventory-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; overflow: hidden; margin-top: 20px; border: 1px solid #2a2a2a; }
+        .inventory-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; overflow: hidden; border: 1px solid #2a2a2a; }
         .inventory-table th { background: #1a1a1a; padding: 15px; text-align: left; color: #888; font-size: 0.7rem; text-transform: uppercase; }
-        .inventory-table td { padding: 15px; border-bottom: 1px solid #222; text-align: left; font-size: 0.9rem; }
+        .inventory-table td { padding: 15px; border-bottom: 1px solid #222; font-size: 0.9rem; }
         
-        /* Status Colors */
+        /* Status Tags */
         .status-tag { padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; border: 1px solid #444; }
-        .status-ready { background: #064e3b; color: #10b981; border-color: #059669; box-shadow: 0 0 8px rgba(16, 185, 129, 0.2); }
-        .status-repair { background: #450a0a; color: #ef4444; border-color: #dc2626; box-shadow: 0 0 8px rgba(239, 68, 68, 0.2); }
-        .status-warning { background: #422006; color: #f59e0b; border-color: #d97706; }
+        .status-online { background: #064e3b; color: #10b981; border-color: #059669; box-shadow: 0 0 8px rgba(16, 185, 129, 0.2); }
+        .status-offline { background: #450a0a; color: #ef4444; border-color: #dc2626; box-shadow: 0 0 8px rgba(239, 68, 68, 0.2); }
+        .status-update { background: #422006; color: #f59e0b; border-color: #d97706; }
         .status-neutral { background: #1f2937; color: #9ca3af; }
 
-        .footer-info { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid #222; color: #555; font-size: 0.7rem; }
-        #last-sync { color: var(--ha); }
+        .footer-info { text-align: center; margin-top: 40px; padding: 20px; color: #555; font-size: 0.7rem; }
     </style>
 </head>
 <body>
 
-    <div class="nav-bar">
-        <button id="btn-drone" class="nav-btn active fpv-btn" onclick="showCategory('Drone')">🛸 FPV HANGAR</button>
-        <button id="btn-home" class="nav-btn ha-btn" onclick="showCategory('Home')">🏠 SMART HOME</button>
-    </div>
+    <div class="header">🏠 HOME SYSTEMS MONITOR</div>
 
     <div class="container">
         <div id="content">
-            <div style="text-align:center; padding:50px; color:var(--fpv);">RE-INITIALIZING SYSTEMS...</div>
+            <div style="text-align:center; padding:50px; color:var(--ha-blue);">CONNECTING TO HUB...</div>
         </div>
-        <div class="footer-info">SYSTEM STATUS: ONLINE | LAST DATA SYNC: <span id="last-sync">NEVER</span></div>
+        <div class="footer-info">SYSTEM STATUS: ACTIVE | SYNC: <span id="last-sync">NEVER</span></div>
     </div>
 
     <script>
         const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLPLCFFC8Hi3lfSSHxo-1KRi9BYhboLM7s2zCZXSmCQbXtjIC9mdbzgi-J_kgdGO4XiEWzGQXZRoMV/pub?gid=0&single=true&output=csv";
-        let masterData = [];
-
+        
         function getStatusClass(status) {
             if (!status) return 'status-neutral';
             const s = status.toLowerCase();
-            if (s.includes('ready') || s.includes('online') || s.includes('active')) return 'status-ready';
-            if (s.includes('repair') || s.includes('grounded') || s.includes('offline')) return 'status-repair';
-            if (s.includes('progress') || s.includes('pending') || s.includes('build')) return 'status-warning';
+            if (s.includes('online') || s.includes('active') || s.includes('running')) return 'status-online';
+            if (s.includes('offline') || s.includes('down') || s.includes('broken')) return 'status-offline';
+            if (s.includes('update') || s.includes('pending')) return 'status-update';
             return 'status-neutral';
         }
 
@@ -62,37 +62,32 @@
                 const response = await fetch(sheetUrl);
                 const text = await response.text();
                 const rows = text.split('\n');
-                masterData = rows.map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, '').trim()));
+                const data = rows.map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/"/g, '').trim()));
                 
                 document.getElementById('last-sync').innerText = new Date().toLocaleTimeString();
-                showCategory('Drone');
+                
+                // Build the Home-only table
+                let html = '<table class="inventory-table"><thead><tr><th>Device</th><th>Specs/Loc</th><th>Status</th></tr></thead><tbody>';
+                let found = 0;
+
+                data.forEach((cols, i) => {
+                    // Filter specifically for "Home" in Column A
+                    if (i > 0 && cols[0] === 'Home') {
+                        found++;
+                        html += `<tr><td><strong>${cols[1]}</strong></td><td>${cols[2]}</td><td><span class="status-tag ${getStatusClass(cols[3])}">${cols[3]}</span></td></tr>`;
+                    }
+                });
+
+                if(found === 0) html += `<tr><td colspan="3" style="text-align:center; padding:30px;">No Home devices found. Check Column A for "Home".</td></tr>`;
+                html += '</tbody></table>';
+                document.getElementById('content').innerHTML = html;
             } catch (e) {
-                document.getElementById('content').innerHTML = "⚠️ SCRIPT ERROR: CHECK GOOGLE SHEET LINK";
+                document.getElementById('content').innerHTML = "⚠️ DATA LINK ERROR";
             }
-        }
-
-        function showCategory(cat) {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            if(cat === 'Drone') document.getElementById('btn-drone').classList.add('active');
-            if(cat === 'Home') document.getElementById('btn-home').classList.add('active');
-
-            let html = '<table class="inventory-table"><thead><tr><th>Model</th><th>Specs</th><th>Status</th></tr></thead><tbody>';
-            let found = 0;
-
-            masterData.forEach((cols, i) => {
-                if (i > 0 && cols[0] === cat) {
-                    found++;
-                    html += `<tr><td><strong>${cols[1]}</strong></td><td>${cols[2]}</td><td><span class="status-tag ${getStatusClass(cols[3])}">${cols[3]}</span></td></tr>`;
-                }
-            });
-
-            if(found === 0) html += `<tr><td colspan="3" style="text-align:center; padding:30px;">No data found for ${cat}</td></tr>`;
-            html += '</tbody></table>';
-            document.getElementById('content').innerHTML = html;
         }
 
         window.onload = init;
     </script>
 </body>
-</html>
+
 
